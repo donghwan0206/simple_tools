@@ -19,5 +19,7 @@ stremlit run src/index.py
 - docker engine
 
 ```shell
+git clone https://github.com/patentpia-kgt/simple_tools.git
+cd simple_tools
 docker compose up
 ```
