@@ -1,7 +1,7 @@
 # Simple Alias Switcher for Elasticsearch
 
 ## Install & Run
-### Manual
+### 1. Manual
 #### Prerequisite
 - python 3.11.9(or later)
 - pip3
@@ -14,7 +14,7 @@ stremlit run src/index.py
 ```
 
 
-### Using docker
+### 2. Using docker
 #### Prerequisite
 - docker engine
 
