@@ -7,7 +7,9 @@ es_url_file_path = os.path.join(os.path.dirname(__file__), "ES_URL.txt")
 # 파일 존재 여부 확인
 if not os.path.exists(es_url_file_path):
     # 파일이 없으면 사용자 입력을 통해 URL 값 받기
-    es_url = st.text_input("ES URL을 입력하세요:", placeholder="http://localhost:9200")
+    es_url = st.text_input(
+        "Enter the Elasticsearch URL(with port):", placeholder="http://localhost:9200"
+    )
 else:
     # 파일이 있으면 파일에서 URL 값 읽기
     with open(es_url_file_path, "r") as f:
