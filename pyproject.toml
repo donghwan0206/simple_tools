@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "es-alias-switcher"
+version = "0.1.0"
+description = "Simple Alias Switcher for Elasticsearch"
+authors = ["donghwan <donghwan0206@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+streamlit = "1.33.0"
+requests = "2.31.0"
+pandas = "2.0.2"
+
+[tool.licensecheck]
+using = "PEP631"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
