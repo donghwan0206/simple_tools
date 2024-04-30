@@ -7,9 +7,7 @@ from app.es_api import (
 )
 
 if "ES_URL" not in st.session_state:
-    st.session_state["ES_URL"] = st.text_input(
-        "ES URL을 입력하세요:", placeholder="http://localhost:9200"
-    )
+    st.switch_page("index.py")
 
 ES_URL = st.session_state["ES_URL"]
 
