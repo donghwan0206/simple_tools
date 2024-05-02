@@ -23,16 +23,16 @@ def change_aliases_old_to_new(old_index, new_index, aliases, es_url):
     for alias in aliases:
         actions.append(
             {
-                "add": {
-                    "index": f"{new_index}",
+                "remove": {
+                    "index": f"{old_index}",
                     "alias": f"{alias}",
                 }
             }
         )
         actions.append(
             {
-                "remove": {
-                    "index": f"{old_index}",
+                "add": {
+                    "index": f"{new_index}",
                     "alias": f"{alias}",
                 }
             }
