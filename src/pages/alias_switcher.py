@@ -16,11 +16,12 @@ ES_URL = st.session_state["ES_URL"]
 # Elastic cluster에서 index list 받아오기
 status, index_list = get_indices(ES_URL)
 
-col1, col2 = st.columns(2)
+column_left, column_right = st.columns(2)
+
+selected_aliases = []
 
 # 좌측 컬럼 UI
-with col1:
-    #
+with column_left:
 
     old_index_name = st.selectbox(
         "old index name",
@@ -59,7 +60,8 @@ with col1:
         else:
             st.json(resp)
 
-with col2:
+# 우측 컬럼 UI
+with column_right:
     new_index_name = st.selectbox(
         "new index name",
         index_list,
@@ -68,15 +70,18 @@ with col2:
     )
     st.write("New Index:", new_index_name)
 
+    # 버튼을 누른 경우 실행
     if st.button(label="Change Aliases", type="primary"):
+        # 변경할 alias가 선택된 경우만 실행
+        if selected_aliases:
+            result, resp = change_aliases_old_to_new(
+                old_index_name,
+                new_index_name,
+                selected_aliases,
+                ES_URL,
+            )
 
-        # 버튼을 누른 경우 실행
-        result, resp = change_aliases_old_to_new(
-            old_index_name,
-            new_index_name,
-            selected_aliases,
-            ES_URL,
-        )
-
-        st.text(result)
-        st.json(resp.text)
+            st.text(result)
+            st.json(resp.text)
+        else:
+            st.error("old index를 선택하여 변경할 alias를 정해주세요.")
