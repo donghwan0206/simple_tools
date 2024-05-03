@@ -16,12 +16,12 @@ ES_URL = st.session_state["ES_URL"]
 # Elastic cluster에서 index list 받아오기
 status, index_list = get_indices(ES_URL)
 
-column_left, column_right = st.columns(2)
+ui_col_left, ui_col_right = st.columns(2)
 
 selected_aliases = []
 
 # 좌측 컬럼 UI
-with column_left:
+with ui_col_left:
 
     old_index_name = st.selectbox(
         "old index name",
@@ -61,7 +61,7 @@ with column_left:
             st.json(resp)
 
 # 우측 컬럼 UI
-with column_right:
+with ui_col_right:
     new_index_name = st.selectbox(
         "new index name",
         index_list,
