@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import logging
 from app.es_api import (
     get_aliases_via_index_name,
     change_aliases_old_to_new,
@@ -7,6 +8,8 @@ from app.es_api import (
     get_all_aliases,
     get_indices_via_phrase,
 )
+
+logger = logging.getLogger(__name__)
 
 # 메인 페이지에서 elasticsearch url 셋팅 안하고 오면 메인 페이지로 redirect
 if "ES_URL" not in st.session_state:
@@ -33,7 +36,7 @@ with ui_tab_alias:
         )
 
         st.markdown(f"Selected alias: `{alias_name}`")
-
+        logger.info(f"Selected alias: `{alias_name}`")
         # old_index 선택했을 때만 출력
         if alias_name is not None:
             index_list = aliases[alias_name]
