@@ -3,6 +3,7 @@ import os
 import time
 import streamlit as st
 import pandas as pd
+from app.es_api import indexing_ppautocomplete
 
 st.set_page_config(
     layout="wide",
@@ -38,7 +39,8 @@ else:
     indexing_tab, editor_tab = st.tabs(["Indexing", "Edit query"])
 
     with indexing_tab:
-        st.text_input("version number", placeholder="2404")
+        version = st.text_input("version number", placeholder="9999")
+        locale = st.selectbox("locale", locales, key="locale").lower()
         data_df = pd.DataFrame(
             [(a, True) for a in index_list], columns=["index", "select"]
         )
@@ -52,22 +54,27 @@ else:
         )
 
         if st.button("Start Indexing", type="primary"):
-            # st.write(stdf)
-            progress_bar = st.progress(0, text="indexing")
-            progress_cnt = 0
-            for _, row in stdf.iterrows():
-                time.sleep(1)
-                if row["select"]:
-                    progress_cnt += 10
+            select_df = stdf[stdf["select"]]
+            if len(select_df) > 0 and version != "":
+                progress_cnt = 100 % len(select_df)
+                progress_bar = st.progress(progress_cnt, text="indexing")
+                for _, row in select_df.iterrows():
+                    # time.sleep(1)
+                    indexing_ppautocomplete(
+                        version=version,
+                        index=row["index"],
+                        locale=locale,
+                        conf=config_path,
+                    )
+                    progress_cnt += 100 // len(select_df)
                     progress_bar.progress(
                         progress_cnt, text=f"indexing... {row['index']}"
                     )
-
-            progress_bar.empty()
-
+                progress_bar(100, text="indexing complete")
+                st.write(select_df)
     with editor_tab:
         target_index = st.selectbox("index", options=index_list)
-        target_locale = st.selectbox("locale", options=locales)
+        target_locale = st.selectbox("locale", options=locales, key="target_locale")
 
         target_query = config["index"][target_index]["query"][target_locale]
         ui_col_left, ui_col_right = st.columns(2)

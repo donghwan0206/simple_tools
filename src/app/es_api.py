@@ -1,4 +1,18 @@
 import requests
+import asyncio
+from .auto_indexing.src import indexing_service
+
+
+def check_es_url(url: str):
+    if url == "":
+        return False
+
+    resp = requests.get(url)
+
+    if resp.status_code == 200 and resp.json()["version"]["number"].startwiths("7"):
+        return True
+    else:
+        return False
 
 
 def get_aliases_via_index_name(index_name, es_url):
@@ -89,3 +103,12 @@ def change_aliases_old_to_new(old_index, new_index, aliases, es_url):
         return True, resp
     else:
         return False, resp
+
+
+def indexing_ppautocomplete(version, index, locale, conf):
+    status, message = asyncio.run(indexing_service(version, index, locale, conf))
+
+    if status == 1:
+        return True
+    else:
+        return False
