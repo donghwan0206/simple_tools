@@ -1,0 +1,3 @@
+[submodule "src/app/auto_indexing"]
+	path = src/app/auto_indexing
+	url = https://github.com/patentpia-kgt/auto_indexing.git
