@@ -4,6 +4,10 @@ import time
 import streamlit as st
 import pandas as pd
 from app.es_api import indexing_ppautocomplete
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 st.set_page_config(
     layout="wide",
@@ -11,6 +15,7 @@ st.set_page_config(
 )
 
 
+# 경로 설정이 안된 경우 index페이지에서 진행
 if "resources_path" not in st.session_state:
     st.switch_page("index.py")
 
@@ -18,7 +23,7 @@ config_path = os.path.join(st.session_state.resources_path, "conf2.json")
 
 
 @st.experimental_dialog("config file is not exist.")
-def dialog():
+def config_not_exist_dialog():
     st.code(f"{config_path}")
     st.write("is not exist")
 
@@ -26,25 +31,31 @@ def dialog():
         st.switch_page("index.py")
 
 
+# config 파일이 없는 경우 경고 모달로 경고 이후 index 페이지로 리다이렉트
 if not os.path.exists(config_path):
-    dialog()
+    config_not_exist_dialog()
 
+# config 파일이 정상적으로 있는 경우 UI 출력
 else:
     with open(config_path, mode="r") as f:
         config = json.load(f)
 
+    # ppautocomplete만 index만 리스트에 저장
     index_list = list(config["index"].keys())[1:]
     locales = ["KR", "US", "EP", "CN", "JP"]
 
-    indexing_tab, editor_tab = st.tabs(["Indexing", "Edit query"])
+    ui_tab_indexing, ui_tab_editor = st.tabs(["Indexing", "Edit query"])
 
-    with indexing_tab:
+    # 색인 UI
+    with ui_tab_indexing:
         version = st.text_input("version number", placeholder="9999")
         locale = st.selectbox("locale", locales, key="locale").lower()
         data_df = pd.DataFrame(
             [(a, True) for a in index_list], columns=["index", "select"]
         )
-        stdf = st.data_editor(
+
+        # ppautocomplete 인덱스를 체크박스와 함께 출력
+        ppautocomplete_dataframe = st.data_editor(
             data_df,
             column_config={
                 "select": st.column_config.CheckboxColumn("select", default=True)
@@ -54,25 +65,41 @@ else:
         )
 
         if st.button("Start Indexing", type="primary"):
-            select_df = stdf[stdf["select"]]
+            # 체크된(인덱스를 수행할) 인덱스만 추출
+            select_df = ppautocomplete_dataframe[ppautocomplete_dataframe["select"]]
+            # 체크된 인덱스가 존재하고, version이 입력된 경우에만 수행
             if len(select_df) > 0 and version != "":
+                logger.info(
+                    f"version: {version}, locale: {locale}, selected index list : {select_df['index'].to_list()}"
+                )
+
                 progress_cnt = 100 % len(select_df)
                 progress_bar = st.progress(progress_cnt, text="indexing")
                 for _, row in select_df.iterrows():
-                    # time.sleep(1)
-                    indexing_ppautocomplete(
-                        version=version,
-                        index=row["index"],
-                        locale=locale,
-                        conf=config_path,
-                    )
+                    # processing UI 빙글빙글
+                    with st.spinner(f"indexing... {row['index']}"):
+                        # 색인 수행
+                        indexing_ppautocomplete(
+                            version=version,
+                            index=row["index"],
+                            locale=locale,
+                            conf=config_path,
+                        )
                     progress_cnt += 100 // len(select_df)
                     progress_bar.progress(
-                        progress_cnt, text=f"indexing... {row['index']}"
+                        progress_cnt, text=f"complete... {row['index']}"
                     )
-                progress_bar(100, text="indexing complete")
+                    logger.info(
+                        f"v{version}_{row['index']}_{locale} : complete indexing"
+                    )
+                progress_bar.progress(100, text="indexing complete")
+
                 st.write(select_df)
-    with editor_tab:
+            else:
+                st.warning("선택된 인덱스가 없거나, 버전이 입력되지 않았습니다.")
+
+    # 쿼리 수정 UI
+    with ui_tab_editor:
         target_index = st.selectbox("index", options=index_list)
         target_locale = st.selectbox("locale", options=locales, key="target_locale")
 
@@ -96,6 +123,10 @@ else:
                 height=600,
             )
             if st.button("save query", type="primary"):
+                logger.info(f"{target_index}_{target_locale} is changed")
+                logger.info(
+                    f"\noriginal query is : \n{target_query} \nnew query is : \n{edited_query}"
+                )
                 config["index"][target_index]["query"][target_locale] = edited_query
                 target_query = config["index"][target_index]["query"][target_locale]
                 code_container.empty()
