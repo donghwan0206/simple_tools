@@ -13,7 +13,7 @@ LOG_DIR = os.path.join(BASE_DIR, "logs")
 resources_path = os.path.join(BASE_DIR, "resources")
 st.session_state["resources_path"] = resources_path
 
-
+# if "logging" not in st.session_state:
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -21,12 +21,14 @@ logging.basicConfig(
         logging.FileHandler(
             os.path.join(
                 LOG_DIR,
-                f'{datetime.now().strftime("%Y-%m-%d-%H_%M_%S")}.log',
+                f'{datetime.now().strftime("%Y-%m-%d")}.log',
             )
         ),
     ],
 )
+st.session_state.logging = True
 
+# if st.session_state.logging:
 logger = logging.getLogger(__name__)
 
 es_url_file_path = os.path.join(resources_path, "ES_URL.txt")

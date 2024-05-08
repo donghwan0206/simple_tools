@@ -22,21 +22,26 @@ selected_aliases = []
 
 ui_tab_alias, ui_tab_index = st.tabs(["via Alias", "via Index"])
 
+# alias 기반 UI
 with ui_tab_alias:
     # Elastic cluster에서 alias list 받아오기
+    # logger.info("load alias list")
     status, aliases = get_all_aliases(ES_URL)
     alias_list = aliases.keys()
-
+    # logger.info("complete loading alias list")
     ui_col_left, ui_col_right = st.columns(2)
     index_list = []
 
     with ui_col_left:
         alias_name = st.selectbox(
-            "Select alias", alias_list, index=None, placeholder="Select alias name..."
+            "Select alias",
+            alias_list,
+            index=None,
+            placeholder="Select alias name...",
         )
 
         st.markdown(f"Selected alias: `{alias_name}`")
-        logger.info(f"Selected alias: `{alias_name}`")
+
         # old_index 선택했을 때만 출력
         if alias_name is not None:
             index_list = aliases[alias_name]
@@ -47,24 +52,30 @@ with ui_tab_alias:
                 st.write("No index")
 
     with ui_col_right:
-        old_index_name = st.selectbox(
-            "old index name", index_list, placeholder="Select index name..."
+        prev_index_name = st.selectbox(
+            "prev index name", index_list, placeholder="Select index name..."
         )
-        if old_index_name is not None:
+        # logger.info(f"selected prev index: {prev_index_name}")
+
+        if prev_index_name is not None:
             _, target_index_list = get_indices_via_phrase(
-                "*" + "_".join(old_index_name.split("_")[1:]), ES_URL
+                "*" + "_".join(prev_index_name.split("_")[1:]), ES_URL
             )
 
             new_index_name = st.selectbox(
                 "new index name", target_index_list, placeholder="Select index name..."
             )
+            # logger.info(f"selected new index: {new_index_name}")
 
         # 버튼을 누른 경우 실행
         if st.button(label="Change Aliases", type="primary", key="change_via_alias"):
             # 변경할 alias가 선택된 경우만 실행
             if alias_name and new_index_name:
+                logger.info(
+                    f"'{alias_name}' change from: {prev_index_name} -> to: {new_index_name}"
+                )
                 result, resp = change_aliases_old_to_new(
-                    old_index_name,
+                    prev_index_name,
                     new_index_name,
                     [alias_name],
                     ES_URL,
@@ -82,16 +93,19 @@ with ui_tab_index:
     ui_col_left, ui_col_right = st.columns(2)
     # 좌측 컬럼 UI
     with ui_col_left:
-        old_index_name = st.selectbox(
-            "old index name", index_list, index=None, placeholder="Select index name..."
+        prev_index_name = st.selectbox(
+            "Prev index name",
+            index_list,
+            index=None,
+            placeholder="Select index name...",
         )
 
-        st.write("Old Index:", old_index_name)
+        st.markdown(f"Prev Index: `{prev_index_name}`")
 
         # old_index 선택했을 때만 출력
-        if old_index_name is not None:
+        if prev_index_name is not None:
             result, resp = get_aliases_via_index_name(
-                index_name=old_index_name, es_url=ES_URL
+                index_name=prev_index_name, es_url=ES_URL
             )
 
             # 성공적으로 alias를 받았을 경우(alias가 0 건인 경우도 포함)
@@ -121,19 +135,22 @@ with ui_tab_index:
     # 우측 컬럼 UI
     with ui_col_right:
         new_index_name = st.selectbox(
-            "new index name",
+            "New index name",
             index_list,
             index=None,
             placeholder="Select index name...",
         )
-        st.write("New Index:", new_index_name)
+        st.markdown(f"New Index: `{new_index_name}`")
 
         # 버튼을 누른 경우 실행
         if st.button(label="Change Aliases", type="primary"):
             # 변경할 alias가 선택된 경우만 실행
-            if selected_aliases:
+            if len(selected_aliases) > 0:
+                logger.info(
+                    f"{selected_aliases.to_list()} change - from: {prev_index_name} ->  to: {new_index_name}"
+                )
                 result, resp = change_aliases_old_to_new(
-                    old_index_name,
+                    prev_index_name,
                     new_index_name,
                     selected_aliases,
                     ES_URL,
