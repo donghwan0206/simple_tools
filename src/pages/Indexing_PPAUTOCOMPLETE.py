@@ -1,6 +1,5 @@
 import json
 import os
-import time
 import streamlit as st
 import pandas as pd
 from app.es_api import indexing_ppautocomplete
@@ -19,16 +18,30 @@ st.set_page_config(
 if "resources_path" not in st.session_state:
     st.switch_page("index.py")
 
-config_path = os.path.join(st.session_state.resources_path, "conf2.json")
+config_path = os.path.join(st.session_state.resources_path, "conf.json")
 
 
 @st.experimental_dialog("config file is not exist.")
 def config_not_exist_dialog():
-    st.code(f"{config_path}")
-    st.write("is not exist")
+    # st.code(f"{config_path}")
+    # st.write("is not exist")
 
+    config_file = st.file_uploader(
+        label="Upload config file",
+        type=["json"],
+        accept_multiple_files=False,
+    )
+    if config_file is not None:
+        try:
+            config = json.loads(str(config_file.getvalue(), "utf-8"))
+        except Exception:
+            st.switch_page("pages/Indexing_PPAUTOCOMPLETE.py")
+
+        with open(config_path, "w", encoding="utf-8") as f:
+            json.dump(config, f)
     if st.button("confirm"):
-        st.switch_page("index.py")
+        st.switch_page("pages/Indexing_PPAUTOCOMPLETE.py")
+        pass
 
 
 # config 파일이 없는 경우 경고 모달로 경고 이후 index 페이지로 리다이렉트
@@ -38,7 +51,10 @@ if not os.path.exists(config_path):
 # config 파일이 정상적으로 있는 경우 UI 출력
 else:
     with open(config_path, mode="r") as f:
-        config = json.load(f)
+        try:
+            config = json.load(f)
+        except json.JSONDecodeError:
+            config_not_exist_dialog()
 
     # ppautocomplete만 index만 리스트에 저장
     index_list = list(config["index"].keys())[1:]
