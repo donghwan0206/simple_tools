@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
 RUN pip3 install poetry
 
 
-RUN git clone https://github.com/patentpia-kgt/simple_tools.git .
+RUN git clone --recurse-submodules https://github.com/patentpia-kgt/simple_tools.git .
 
 RUN pip3 install -r requirements.txt
 
