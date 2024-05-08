@@ -1,12 +1,12 @@
 version: '3.7'
 
 services:
-    simple-tools:
-        image: simple-tools
-        build: .
-        command: streamlit run src/index.py
-
-        ports:
-        - "8501:8501"
-
-        
+  simple-tools:
+    image: simple-tools
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    ports:
+      - "8501:8501"

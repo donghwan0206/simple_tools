@@ -1,6 +1,6 @@
 FROM python:3.11.9-slim
 
-WORKDIR /app
+WORKDIR /app/
 
 RUN apt-get update && apt-get install -y \
   build-essential \
@@ -10,11 +10,10 @@ RUN apt-get update && apt-get install -y \
   && rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install poetry
-
-
-RUN git clone --recurse-submodules https://github.com/patentpia-kgt/simple_tools.git .
-
-RUN pip3 install -r requirements.txt
+COPY requirements.txt .
+COPY src/app/auto_indexing/requirements.txt ./sub_requirements.txt
+RUN pip3 install --no-cache-dir -r /app/requirements.txt
+RUN pip3 install --no-cache-dir -r /app/sub_requirements.txt
 
 EXPOSE 8501
 
