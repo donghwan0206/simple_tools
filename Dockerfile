@@ -3,6 +3,9 @@ FROM python:3.11.9-slim
 WORKDIR /app/
 
 RUN apt-get update && apt-get install -y \
+  python3-dev \
+  pkg-config \
+  default-libmysqlclient-dev \
   build-essential \
   curl \
   software-properties-common \
@@ -12,8 +15,9 @@ RUN apt-get update && apt-get install -y \
 RUN pip3 install poetry
 COPY requirements.txt .
 COPY src/app/auto_indexing/requirements.txt ./sub_requirements.txt
-RUN pip3 install --no-cache-dir -r /app/requirements.txt
+
 RUN pip3 install --no-cache-dir -r /app/sub_requirements.txt
+RUN pip3 install --no-cache-dir -r /app/requirements.txt
 
 EXPOSE 8501
 

@@ -22,4 +22,7 @@ layout = "wide"
 # font =
 
 [logger]
-level="info"
+level="debug"
+
+[server]
+maxMessageSize = 2000
