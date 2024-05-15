@@ -13,6 +13,10 @@ LOG_DIR = os.path.join(BASE_DIR, "logs")
 resources_path = os.path.join(BASE_DIR, "resources")
 st.session_state["resources_path"] = resources_path
 
+# secrets.toml 경로
+streamlit_path = os.path.join(BASE_DIR, ".streamlit")
+st.session_state["streamlit_path"] = streamlit_path
+
 # if "logging" not in st.session_state:
 logging.basicConfig(
     level=logging.INFO,
