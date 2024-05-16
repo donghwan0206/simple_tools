@@ -65,12 +65,15 @@ def store2json(df: pd.DataFrame):
         return None
 
 
-def store2csv(df: pd.DataFrame):
+def store2csv(df: pd.DataFrame, schema: dict = None):
 
     temp_path = os.path.join(TEMP_DIR, "temp.csv")
-
+    if schema is None:
+        cols = df.columns
+    else:
+        cols = schema.keys()
     try:
-        df.to_csv(temp_path, index=False)
+        df.to_csv(temp_path, columns=cols, index=False, header=False)
         logger.info("Complete: DataFrame to temp file ")
         return temp_path
     except Exception as e:
@@ -95,7 +98,6 @@ def csv2mongo(path, schema, db, user, pw, host, port, collection):
         "--columnsHaveTypes",
         "--fields",
         ",".join([f"{k}.{v}()" for k, v in schema.items()]),
-        "--headerline",
         "--file",
         f"{path}",
         "--numInsertionWorkers",

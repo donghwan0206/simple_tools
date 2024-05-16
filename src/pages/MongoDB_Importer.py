@@ -188,8 +188,8 @@ def json2mongo_w_time(path, db, user, pw, host, port, collection):
 
 
 @return_processing_time
-def store2csv_w_time(df):
-    return store2csv(df)
+def store2csv_w_time(df, schema):
+    return store2csv(df, schema)
 
 
 @return_processing_time
@@ -223,7 +223,7 @@ if st.button("migrate to mongo"):
 
             st.write(f"Storing to temp file...")
             # processing_time2, path = store2json_w_time(data)
-            processing_time2, path = store2csv_w_time(data)
+            processing_time2, path = store2csv_w_time(data, task["schema"])
             st.write(f"Storing complete({processing_time2}).")
 
             st.write("Importing into mongodb...")
