@@ -135,9 +135,12 @@ st.divider()
 with open(mongo_schema_path, "r", encoding="utf-8") as f:
     mongo_schema = json.load(f)
     tasks = mongo_schema.keys()
-    selected_collection = st.selectbox("select task", tasks)
 
+selected_collection = st.selectbox("select task", tasks)
 task = mongo_schema[selected_collection]
+
+with st.expander("task info"):
+    st.json(task, expanded=False)
 
 
 db_list = [
@@ -160,6 +163,7 @@ mongo_collection_name = st.text_input(
     placeholder="Enter collection name...",
     value=task["collection"],
 )
+
 
 st.divider()
 conn = st.connection(
