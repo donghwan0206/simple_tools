@@ -23,7 +23,9 @@ RUN pip3 install poetry
 
 # RUN wget https://fastdl.mongodb.org/tools/db/mongodb-database-tools-macos-arm64-100.9.4.zip
 # RUN curl -o mongodb-database-tools.deb https://fastdl.mongodb.org/tools/db/mongodb-database-tools-debian11-arm64-100.9.4.deb
-RUN curl -o mongodb-database-tools.deb https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2204-arm64-100.9.4.deb
+# RUN curl -o mongodb-database-tools.deb https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2204-arm64-100.9.4.deb
+RUN curl -o mongodb-database-tools.deb https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2204-x86_64-100.9.4.deb
+
 # https://fastdl.mongodb.org/tools/db/mongodb-database-tools-debian11-x86_64-100.9.4.deb
 # # https://downloads.mongodb.com/compass/mongodb-mongosh_2.2.5_amd64.deb
 # # https://fastdl.mongodb.org/tools/db/mongodb-database-tools-rhel90-x86_64-100.9.4.tgz
