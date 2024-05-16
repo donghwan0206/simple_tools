@@ -206,6 +206,12 @@ def csv2mongo_w_time(path, schema, db, user, pw, host, port, collection):
     )
 
 
+@return_processing_time
+def create_index(collection, indexes):
+    for index in indexes:
+        collection.create_index(index)
+
+
 if st.button("migrate to mongo"):
     if "" in [rdb_query, mongo_db_name, mongo_collection_name]:
         st.warning(
@@ -217,16 +223,16 @@ if st.button("migrate to mongo"):
             f"Migrate to mongodb.{mongo_db_name}.{mongo_collection_name} ...",
             expanded=True,
         ) as status:
-            st.write("Fetching from RDB...")
+            st.write("Start: Fetching from RDB...")
             processing_time1, data = get_data_from_rdb(conn, rdb_query)
-            st.write(f"Fetching complete({processing_time1}).")
+            st.write(f"Finish: Fetching from RDB... ({processing_time1}).")
 
-            st.write(f"Storing to temp file...")
+            st.write(f"Start: Storing to temp file...")
             # processing_time2, path = store2json_w_time(data)
             processing_time2, path = store2csv_w_time(data, task["schema"])
-            st.write(f"Storing complete({processing_time2}).")
+            st.write(f"Finish: Storing to temp file(path)... ({processing_time2}).")
 
-            st.write("Importing into mongodb...")
+            st.write("Start: Importing into mongodb...")
             # processing_time3, reuslt = json2mongo_w_time(
             #     path,
             #     db=mongo_db_name,
@@ -246,9 +252,17 @@ if st.button("migrate to mongo"):
                 port=mongodb_port,
                 collection=mongo_collection_name,
             )
-            st.write(f"Importing complete({processing_time3}).")
+            st.write(f"Finish: Importing into mongodb... ({processing_time3}).")
+
+            st.write("Start: Create index")
+            target_collection = mongo_client.get_database(mongo_db_name).get_collection(
+                mongo_collection_name
+            )
+            processing_time4, _ = create_index(target_collection, task["index"])
+
+            st.write("Finish: Create index")
 
             status.update(
-                label=f"Migrating complete! total time: {sum([processing_time1,processing_time2,processing_time3], timedelta())}",
+                label=f"Migrating complete! total time: {sum([processing_time1, processing_time2, processing_time3, processing_time4], timedelta())}",
                 state="complete",
             )
