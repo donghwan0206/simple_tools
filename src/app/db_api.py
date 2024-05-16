@@ -66,18 +66,10 @@ def store2json(df: pd.DataFrame):
 
 
 def store2csv(df: pd.DataFrame):
-    # logger.info("convert data type")
-    # df = df.astype("string[pyarrow]")
-    # logger.info("complete convert data type")
-    # logger.info("convert to dict")
-    # df_dict = df.to_dict(orient="records")
-    # logger.info(type(df_dict))
-    # logger.info("complete convert to dict")
+
     temp_path = os.path.join(TEMP_DIR, "temp.csv")
 
     try:
-        # with open(temp_path, "w") as f:
-        #     json.dump(df_dict, f)
         df.to_csv(temp_path, index=False)
         logger.info("Complete: DataFrame to temp file ")
         return temp_path
@@ -108,7 +100,6 @@ def csv2mongo(path, schema, db, user, pw, host, port, task):
         "--numInsertionWorkers",
         "4",
     ]
-    logger.info(mongoimport_command)
     logger.info(f"mongoimport start")
     result = subprocess.run(mongoimport_command, capture_output=True, text=True)
     logger.info(f"subprocess stdout: {result.stdout}")
