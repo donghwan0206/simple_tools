@@ -7,7 +7,7 @@ import time
 from datetime import timedelta
 import logging
 import json
-from app.db_api import csv2mongo, store2csv, store2json, json2mongo, async_save_to_bson
+from app.db_api import csv2mongo, store2csv, store2json, json2mongo
 
 logger = logging.getLogger(__name__)
 
@@ -167,15 +167,6 @@ conn = st.connection(
     type="sql",
     url=f"mariadb://{rdb_username}:{rdb_password}@{rdb_host}:{rdb_port}/{rdb_database}",
 )
-# df = conn.query("select CRHID, CRH, LANG from tbl_names_ml_crh limit 1000", ttl=600)
-# st.dataframe(df)
-
-
-# @return_processing_time
-# def insert2mongodb(db_name, collection_name, dataframe: pd.DataFrame):
-#     # db = mongo_client.get_database(db_name)
-#     # collection = db.create_collection(collection_name)
-#     collection.insert_many(dataframe.to_dict(orient="records"))
 
 
 @return_processing_time
@@ -229,18 +220,6 @@ if st.button("migrate to mongo"):
             processing_time2, path = store2csv_w_time(data)
             st.write(f"Storing complete({processing_time2}).")
 
-            # st.write("Fetching RDB and Saving to bson...")
-            # processing_time1, path = async_save_to_bson(
-            #     {
-            #         "host": rdb_host,
-            #         "user": rdb_username,
-            #         "password": rdb_password,
-            #         "db": rdb_database,
-            #     },
-            #     rdb_query,
-            # )
-            # st.write(f"Fetching & Saving complete({processing_time1}).")
-
             st.write("Importing into mongodb...")
             # processing_time3, reuslt = json2mongo_w_time(
             #     path,
@@ -262,12 +241,6 @@ if st.button("migrate to mongo"):
                 task=task,
             )
             st.write(f"Importing complete({processing_time3}).")
-
-            # st.write("Inserting into MongoDB")
-            # # processing_time2, _ = insert2mongodb(
-            # #     mongo_db_name, mongo_collection_name, data
-            # # )
-            # st.write(f"Inserting complete({processing_time2})")
 
             status.update(
                 label=f"Migrating complete! total time: {sum([processing_time1,processing_time2,processing_time3], timedelta())}",

@@ -1,9 +1,4 @@
-import asyncio
-import aiomysql
-import aiofiles
-import bson.json_util
 import pandas as pd
-import bson
 import json
 import os
 import logging
@@ -47,58 +42,6 @@ def json2mongo(path, db, user, pw, host, port, task):
     else:
         logger.error("Error occurred during import")
         return 1
-
-
-async def fetch_batch(cursor, query, batch_size):
-    """배치 단위로 데이터를 읽어오는 비동기 함수"""
-    await cursor.execute(query)
-    while True:
-        rows = await cursor.fetchmany(batch_size)
-        if not rows:
-            break
-        df = pd.DataFrame(
-            rows,
-            columns=[desc[0] for desc in cursor.description],
-            dtype="string[pyarrow]",
-        )
-        yield df
-
-
-async def save_to_bson(filename, df):
-    """데이터프레임을 BSON 파일로 비동기 저장"""
-    df_dict = df.to_dict("records")
-    async with aiofiles.open(filename, "ab") as file:
-        for record in df_dict:
-            await file.write(bson.encode(record))
-
-
-async def fetch_and_save_batches(db_config, query, batch_size, output_file):
-    """데이터를 비동기 배치 단위로 읽고 BSON 파일로 저장"""
-    conn = await aiomysql.connect(**db_config)
-    try:
-        async with conn.cursor() as cursor:
-            async for df in fetch_batch(cursor, query, batch_size):
-                await save_to_bson(output_file, df)
-    except Exception as e:
-        print(f"An error occurred: {e}")
-    finally:
-        conn.close()
-
-
-def async_save_to_bson(db_config, query, batch_size=10000):
-    """비동기적으로 데이터를 저장하는 메인 함수"""
-    # 기존 파일이 있으면 삭제
-    import os
-
-    temp_path = os.path.join(TEMP_DIR, "temp.bson")
-
-    if os.path.exists(temp_path):
-        os.remove(temp_path)
-
-    # 이벤트 루프 생성 및 실행
-    asyncio.run(fetch_and_save_batches(db_config, query, batch_size, temp_path))
-
-    return temp_path
 
 
 def store2json(df: pd.DataFrame):
