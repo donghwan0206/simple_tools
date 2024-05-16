@@ -13,7 +13,7 @@ LOG_DIR = os.path.join(BASE_DIR, "logs")
 TEMP_DIR = os.path.join(BASE_DIR, "temp")
 
 
-def json2mongo(path, db, user, pw, host, port, task):
+def json2mongo(path, db, user, pw, host, port, collection):
     mongoimport_command = [
         "mongoimport",
         "--uri",
@@ -23,7 +23,7 @@ def json2mongo(path, db, user, pw, host, port, task):
         "--db",
         f"{db}",
         "--collection",
-        f"{task['collection']}",
+        f"{collection}",
         "--file",
         f"{path}",
         "--jsonArray",
@@ -79,7 +79,7 @@ def store2csv(df: pd.DataFrame):
         return None
 
 
-def csv2mongo(path, schema, db, user, pw, host, port, task):
+def csv2mongo(path, schema, db, user, pw, host, port, collection):
     mongoimport_command = [
         "mongoimport",
         "--uri",
@@ -89,7 +89,7 @@ def csv2mongo(path, schema, db, user, pw, host, port, task):
         "--db",
         f"{db}",
         "--collection",
-        f"{task['collection']}",
+        f"{collection}",
         "--type",
         "csv",
         "--columnsHaveTypes",

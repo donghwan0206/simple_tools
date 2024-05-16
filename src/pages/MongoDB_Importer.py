@@ -175,9 +175,15 @@ def store2json_w_time(df):
 
 
 @return_processing_time
-def json2mongo_w_time(path, db, user, pw, host, port, task):
+def json2mongo_w_time(path, db, user, pw, host, port, collection):
     return json2mongo(
-        path=path, db=db, user=user, pw=pw, host=host, port=port, task=task
+        path=path,
+        db=db,
+        user=user,
+        pw=pw,
+        host=host,
+        port=port,
+        collection=collection,
     )
 
 
@@ -187,7 +193,7 @@ def store2csv_w_time(df):
 
 
 @return_processing_time
-def csv2mongo_w_time(path, schema, db, user, pw, host, port, task):
+def csv2mongo_w_time(path, schema, db, user, pw, host, port, collection):
     return csv2mongo(
         path=path,
         schema=schema,
@@ -196,7 +202,7 @@ def csv2mongo_w_time(path, schema, db, user, pw, host, port, task):
         pw=pw,
         host=host,
         port=port,
-        task=task,
+        collection=collection,
     )
 
 
@@ -228,7 +234,7 @@ if st.button("migrate to mongo"):
             #     pw=mongodb_password,
             #     host=mongodb_host,
             #     port=mongodb_port,
-            #     task=task,
+            #     collection=mongo_collection_name,
             # )
             processing_time3, reuslt = csv2mongo_w_time(
                 path,
@@ -238,7 +244,7 @@ if st.button("migrate to mongo"):
                 pw=mongodb_password,
                 host=mongodb_host,
                 port=mongodb_port,
-                task=task,
+                collection=mongo_collection_name,
             )
             st.write(f"Importing complete({processing_time3}).")
 
