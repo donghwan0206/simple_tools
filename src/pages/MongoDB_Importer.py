@@ -187,10 +187,10 @@ def store2csv_w_time(df):
 
 
 @return_processing_time
-def csv2mongo_w_time(path, columns, db, user, pw, host, port, task):
+def csv2mongo_w_time(path, schema, db, user, pw, host, port, task):
     return csv2mongo(
         path=path,
-        columns=columns,
+        schema=schema,
         db=db,
         user=user,
         pw=pw,
@@ -232,7 +232,7 @@ if st.button("migrate to mongo"):
             # )
             processing_time3, reuslt = csv2mongo_w_time(
                 path,
-                columns=data.columns,
+                schema=task["schema"],
                 db=mongo_db_name,
                 user=mongodb_username,
                 pw=mongodb_password,
