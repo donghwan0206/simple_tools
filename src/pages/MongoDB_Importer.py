@@ -287,13 +287,29 @@ edited_df = st.data_editor(
         "rdb_username": st.column_config.TextColumn(),
         "rdb_password": st.column_config.TextColumn(),
         "import": st.column_config.CheckboxColumn(),
-        "conn_check": st.column_config.CheckboxColumn(),
         "schema": st.column_config.TextColumn(),
     },
     hide_index=True,
     height=600,
 )
 
+if st.button("save config"):
+    for i, row in edited_df.iterrows():
+        key = row["collection"]
+        for conf in [
+            "query",
+            "rdb_host",
+            "rdb_port",
+            "rdb_db",
+            "rdb_username",
+            "rdb_password",
+        ]:
+            st.session_state.mongo_schema[key][conf] = row[conf]
+
+    with open(mongo_schema_path, "w") as g:
+        json.dump(st.session_state.mongo_schema, g, indent=2, ensure_ascii=False)
+
+    st.write("Save complete!")
 
 if st.button("RDB Connection Check"):
     rdb_df = edited_df[edited_df["data_source"] == "rdb"]
@@ -315,7 +331,6 @@ if st.button("RDB Connection Check"):
                 st.toast(f"✅ {collection}: DB connection is OK! ")
             else:
                 st.warning(f"{collection}: DB connection is failed.")
-            conn.close()
 
 
 if st.button("Migrate to MongoDB", type="primary"):
