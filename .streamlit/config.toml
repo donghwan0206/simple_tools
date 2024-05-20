@@ -26,3 +26,4 @@ level="debug"
 
 [server]
 maxMessageSize = 2000
+maxUploadSize = 2000

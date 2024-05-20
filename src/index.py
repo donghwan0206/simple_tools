@@ -17,6 +17,9 @@ st.session_state["resources_path"] = resources_path
 streamlit_path = os.path.join(BASE_DIR, ".streamlit")
 st.session_state["streamlit_path"] = streamlit_path
 
+temp_path = os.path.join(BASE_DIR, "temp")
+st.session_state["temp_path"] = temp_path
+
 # if "logging" not in st.session_state:
 logging.basicConfig(
     level=logging.INFO,
