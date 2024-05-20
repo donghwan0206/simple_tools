@@ -29,12 +29,6 @@ secrets_path = os.path.join(st.session_state.streamlit_path, "secrets.toml")
 mongo_schema_path = os.path.join(st.session_state.resources_path, "mongo_schema.json")
 
 
-if "mongo_schema" not in st.session_state:
-    with open(mongo_schema_path, "r", encoding="utf-8") as f:
-        mongo_schema = json.load(f)
-        st.session_state.mongo_schema = mongo_schema
-
-
 # 파일 업로드 모달
 @st.experimental_dialog("config file is not exist.")
 def file_not_exist_dialog(path, _type: list[str]):
@@ -110,6 +104,10 @@ except FileNotFoundError:
     file_not_exist_dialog()
     st.stop()
 
+if "mongo_schema" not in st.session_state:
+    with open(mongo_schema_path, "r", encoding="utf-8") as f:
+        mongo_schema = json.load(f)
+        st.session_state.mongo_schema = mongo_schema
 
 # # rdb_info 기본값 지정 및 수정 가능. (파일이 수정되지는 않음)
 with st.expander(label="rdb info") as rdb_info:
