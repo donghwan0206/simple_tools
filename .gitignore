@@ -1,5 +1,11 @@
 __pycache__
+
+.DS_Store
+test.ipynb
+
+
 logs/*.log
 temp/*
+resources/*
 
 .streamlit/secrets.toml
