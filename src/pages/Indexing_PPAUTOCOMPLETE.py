@@ -4,7 +4,7 @@ import streamlit as st
 import pandas as pd
 from app.es_api import indexing_ppautocomplete
 import logging
-
+from streamlit_ace import st_ace
 
 logger = logging.getLogger(__name__)
 
@@ -132,11 +132,17 @@ else:
 
         with ui_col_right:
             st.subheader("edit query")
-            edited_query = st.text_area(
-                "code edit",
+            # edited_query = st.text_area(
+            #     "code edit",
+            #     value=target_query,
+            #     label_visibility="collapsed",
+            #     height=600,
+            # )
+            edited_query = st_ace(
                 value=target_query,
-                label_visibility="collapsed",
-                height=600,
+                language="sql",
+                tab_size=2,
+                theme="dracula",
             )
             if st.button("save query", type="primary"):
                 logger.info(f"{target_index}_{target_locale} is changed")
