@@ -1,6 +1,7 @@
 import requests
 import asyncio
 from .auto_indexing.src import indexing_service
+from pandas import DataFrame
 
 
 def check_es_url(url: str):
@@ -15,7 +16,54 @@ def check_es_url(url: str):
         return False
 
 
-def get_aliases_via_index_name(index_name, es_url):
+def get_indices_wo_alias(
+    es_url: str,
+) -> tuple[bool, list] | tuple[bool, requests.Response]:
+    end_point = f"{es_url}/_alias"
+
+    resp = requests.get(end_point)
+
+    if resp.status_code == 200:
+        index_list = []
+        for k, v in resp.json().items():
+            if len(v["aliases"]) > 0:
+                continue
+            elif not k.startswith("."):
+                index_list.append(k)
+            index_list.sort()
+        return True, index_list
+    else:
+        return False, resp
+
+
+def delete_indices(indices: list, es_url: str):
+    fail_list = []
+
+    for index in indices:
+        end_point = f"{es_url}/{index}"
+        resp = requests.delete(end_point)
+
+        if resp.status_code == 200 and resp.json()["acknowledged"] == True:
+            continue
+        else:
+            fail_list.append(resp.json())
+    if len(fail_list) == 0:
+        return True, fail_list
+    else:
+        return False, fail_list
+
+
+def get_aliases_via_index_name(index_name: str, es_url: str) -> tuple[bool, dict]:
+    """
+    index를 입력받아 해당 index에 할당된 alias를 반환
+
+    Args:
+        index_name (str): _description_
+        es_url (str): _description_
+
+    Returns:
+        tuple[bool, dict]: _description_
+    """
     end_point = f"{es_url}/{index_name}/_alias"
 
     resp = requests.get(end_point)
@@ -28,7 +76,7 @@ def get_aliases_via_index_name(index_name, es_url):
         return False, resp["error"]
 
 
-def get_all_aliases(es_url):
+def get_all_aliases(es_url: str) -> tuple[bool, dict]:
     import pandas as pd
 
     end_point = f"{es_url}/_cat/aliases?format=json&s=index:desc"
@@ -45,7 +93,16 @@ def get_all_aliases(es_url):
         return False, resp
 
 
-def get_indices_via_phrase(phrase, es_url):
+def get_indices_via_phrase(phrase: str, es_url: str) -> tuple[bool, DataFrame]:
+    """_summary_
+
+    Args:
+        phrase (str): _description_
+        es_url (str): _description_
+
+    Returns:
+        tuple[bool, dict]: _description_
+    """
     import pandas as pd
 
     end_point = f"{es_url}/_cat/indices/{phrase}?format=json&s=index:desc"
@@ -58,7 +115,9 @@ def get_indices_via_phrase(phrase, es_url):
         return False, resp
 
 
-def get_all_indices(es_url):
+def get_all_indices(
+    es_url: str,
+) -> tuple[bool, DataFrame] | tuple[bool, requests.Response]:
     import pandas as pd
 
     end_point = f"{es_url}/_cat/indices?format=json&s=index:desc"
