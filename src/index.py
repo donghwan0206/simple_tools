@@ -70,8 +70,22 @@ if es_url:  # "ES_URL.txt" 파일 생성 및 URL 값 저장
     if "ES_URL" not in st.session_state:
         st.session_state["ES_URL"] = es_url
 
-    st.write("Elasticsearch URL: ", st.session_state.ES_URL)
-    st.page_link("pages/Alias_Switcher.py", label="Alias Switcher", icon="🔀")
-    st.page_link(
-        "pages/Indexing_PPAUTOCOMPLETE.py", label="Indexing PPAUTOCOMPLETE", icon="🗳️"
-    )
+    ui_col_left, ui_col_right = st.columns(2)
+    with ui_col_left:
+        st.subheader("Elasticsearch tools")
+        st.write("Elasticsearch URL: ", st.session_state.ES_URL)
+        st.page_link("pages/Alias_Switcher.py", label="Alias Switcher", icon="🔀")
+        st.page_link("pages/Index_Cleaner.py", label="Index Cleaner", icon="🧹")
+        st.page_link(
+            "pages/Indexing_PPAUTOCOMPLETE.py",
+            label="Indexing PPAUTOCOMPLETE",
+            icon="🗳️",
+        )
+
+    with ui_col_right:
+        st.subheader("DB tools")
+        st.page_link(
+            "pages/MongoDB_Importer.py",
+            label="MongoDB Importer",
+            icon="🗄️",
+        )
