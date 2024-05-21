@@ -69,7 +69,7 @@ with ui_tab_index:
         if st.button("Reload list of index", type="primary"):
             reload_index_list()
 
-        ui_col_left_btn, ui_col_right_btn1, ui_col_right_btn2 = st.columns([3, 1, 1])
+        ui_col_left_btn, ui_col_right_btn1, ui_col_right_btn2 = st.columns([4, 1, 1])
 
         with ui_col_left_btn:
             search_words = st.text_input(label="search", placeholder="ipoffice")
