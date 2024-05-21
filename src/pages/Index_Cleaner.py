@@ -2,9 +2,6 @@ import streamlit as st
 import pandas as pd
 import logging
 from app.es_api import (
-    get_aliases_via_index_name,
-    change_aliases_old_to_new,
-    get_all_indices,
     get_indices_wo_alias,
     delete_indices,
 )
@@ -59,13 +56,8 @@ def confirm_delete(selected_indices, es_url):
 
 selected_aliases = []
 
-ui_tab_alias, ui_tab_dummy = st.tabs(["Index with no alias", "dummy"])
-# alias 기반 UI
-with ui_tab_alias:
-    # Elastic cluster에서 alias list 받아오기
-    # logger.info("load alias list")
-
-    # logger.info("complete loading alias list")
+ui_tab_index, ui_tab_dummy = st.tabs(["Index with no alias", "dummy"])
+with ui_tab_index:
     ui_col_left, ui_col_right = st.columns(2)
     index_list = []
 
@@ -74,11 +66,17 @@ with ui_tab_alias:
 
     with ui_col_left:
         st.subheader("List of index(with no alias)")
+        if st.button("Reload list of index", type="primary"):
+            reload_index_list()
+
         ui_col_left_btn, ui_col_right_btn1, ui_col_right_btn2 = st.columns([3, 1, 1])
 
         with ui_col_left_btn:
-            if st.button("Reload list of index", type="primary"):
-                reload_index_list()
+            search_words = st.text_input(label="search", placeholder="ipoffice")
+            search_words = search_words.strip().split(" ")
+            search_df = st.session_state.data_df
+            for word in search_words:
+                search_df = search_df[search_df["index"].str.contains(word, na=False)]
 
         with ui_col_right_btn1:
             if st.button("Check All"):
@@ -90,7 +88,7 @@ with ui_tab_alias:
                 st.rerun()
 
         stdf = st.data_editor(
-            st.session_state.data_df,
+            search_df,
             column_config={
                 "index": st.column_config.TextColumn(width="large"),
                 "select": st.column_config.CheckboxColumn("select", width="small"),
@@ -117,75 +115,13 @@ with ui_tab_alias:
 
 with ui_tab_dummy:
     # Elastic cluster에서 index list 받아오기
-    status, index_list = get_all_indices(ES_URL)
+    st.write("dummy")
 
     ui_col_left, ui_col_right = st.columns(2)
     # 좌측 컬럼 UI
     with ui_col_left:
-        prev_index_name = st.selectbox(
-            "Prev index name",
-            index_list,
-            index=None,
-            placeholder="Select index name...",
-        )
-
-        st.markdown(f"Prev Index: `{prev_index_name}`")
-
-        # old_index 선택했을 때만 출력
-        if prev_index_name is not None:
-            result, resp = get_aliases_via_index_name(
-                index_name=prev_index_name, es_url=ES_URL
-            )
-
-            # 성공적으로 alias를 받았을 경우(alias가 0 건인 경우도 포함)
-            if result:
-                data_df = pd.DataFrame(
-                    [(a, True) for a in resp], columns=["alias", "select"]
-                )
-                stdf = st.data_editor(
-                    data_df,
-                    column_config={
-                        "select": st.column_config.CheckboxColumn(
-                            "select", default=True
-                        )
-                    },
-                    disabled=["alias"],
-                    hide_index=True,
-                )
-
-                # 선택된 alias가 있는 경우 표 출력
-                if len(stdf) > 0:
-                    selected_aliases = stdf[stdf["select"]]["alias"]
-                    st.header("selected aliases")
-                    st.dataframe(selected_aliases, hide_index=True)
-            else:
-                st.json(resp)
+        st.write("left column")
 
     # 우측 컬럼 UI
     with ui_col_right:
-        new_index_name = st.selectbox(
-            "New index name",
-            index_list,
-            index=None,
-            placeholder="Select index name...",
-        )
-        st.markdown(f"New Index: `{new_index_name}`")
-
-        # 버튼을 누른 경우 실행
-        if st.button(label="Change Aliases", type="primary"):
-            # 변경할 alias가 선택된 경우만 실행
-            if len(selected_aliases) > 0:
-                logger.info(
-                    f"{selected_aliases.to_list()} change - from: {prev_index_name} ->  to: {new_index_name}"
-                )
-                result, resp = change_aliases_old_to_new(
-                    prev_index_name,
-                    new_index_name,
-                    selected_aliases,
-                    ES_URL,
-                )
-
-                st.text(result)
-                st.json(resp.text)
-            else:
-                st.error("old index를 선택하여 변경할 alias를 정해주세요.")
+        st.write("right column")
