@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 import logging
+from logging.handlers import TimedRotatingFileHandler
 from app.es_api import check_es_url
 from datetime import datetime
 
@@ -20,23 +21,31 @@ st.session_state["streamlit_path"] = streamlit_path
 temp_path = os.path.join(BASE_DIR, "temp")
 st.session_state["temp_path"] = temp_path
 
-# if "logging" not in st.session_state:
+if not os.path.exists(LOG_DIR):
+    os.makedirs(LOG_DIR)
+
+log_file = os.path.join(LOG_DIR, "app.log")
+
+# 핸들러 설정
+handler = TimedRotatingFileHandler(log_file, when="midnight", interval=1, backupCount=7)
+handler.suffix = "%Y-%m-%d"  # 파일 이름에 날짜를 포함하도록 설정
+handler.extMatch = r"^\d{4}-\d{2}-\d{2}$"  # 파일 이름의 날짜 형식 설정
+
+# 포매터 설정
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+
+# 로거에 핸들러 추가
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[
-        logging.FileHandler(
-            os.path.join(
-                LOG_DIR,
-                f'{datetime.now().strftime("%Y-%m-%d")}.log',
-            )
-        ),
-    ],
+    handlers=[handler],
 )
 st.session_state.logging = True
 
 # if st.session_state.logging:
 logger = logging.getLogger(__name__)
+logger.addHandler(handler)
 
 es_url_file_path = os.path.join(resources_path, "ES_URL.txt")
 
