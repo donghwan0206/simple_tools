@@ -7,6 +7,7 @@ import time
 from datetime import timedelta, datetime
 import logging
 import json
+from notifypy import Notify
 from app.db_api import csv2mongo, store2csv, store2json, json2mongo
 
 logger = logging.getLogger(__name__)
@@ -409,3 +410,7 @@ if st.button("Migrate to MongoDB", type="primary"):
             label=f"Migrating for csv complete  total time: {sum(processing_time_list, timedelta())}",
             state="complete",
         )
+        notification = Notify()
+        notification.title = "Migrate task is complete!"
+        notification.message = f"{selected_df['collection'].tolist()}"
+        notification.send()
