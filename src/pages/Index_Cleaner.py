@@ -44,7 +44,7 @@ def confirm_delete(selected_indices, es_url):
         logger.info(f"delete index:{selected_indices}")
         status, resp_list = delete_indices(selected_indices, es_url)
         if status:
-            logger.info(f"Success delete")
+            logger.info("Success: delete index")
             st.success("Success")
             reload_index_list()
             st.rerun()
@@ -72,7 +72,7 @@ with ui_tab_index:
         ui_col_left_btn, ui_col_right_btn1, ui_col_right_btn2 = st.columns([4, 1, 1])
 
         with ui_col_left_btn:
-            search_words = st.text_input(label="search", placeholder="ipoffice")
+            search_words = st.text_input(label="search", placeholder="e.g. locale")
             search_words = search_words.strip().split(" ")
             search_df = st.session_state.data_df
             for word in search_words:
@@ -113,8 +113,8 @@ with ui_tab_index:
         st.table(stdf[stdf["select"]]["index"])
 
 
+# dummy UI
 with ui_tab_dummy:
-    # Elastic cluster에서 index list 받아오기
     st.write("dummy")
 
     ui_col_left, ui_col_right = st.columns(2)
