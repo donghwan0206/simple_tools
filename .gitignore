@@ -5,6 +5,7 @@ test.ipynb
 
 
 logs/*.log
+logs/app.log.*
 temp/*
 resources/*
 
