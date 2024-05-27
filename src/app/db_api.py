@@ -13,6 +13,24 @@ LOG_DIR = os.path.join(BASE_DIR, "logs")
 TEMP_DIR = os.path.join(BASE_DIR, "temp")
 
 
+def store2json(df: pd.DataFrame):
+    logger.info("convert to dict")
+    df_dict = df.to_dict(orient="records")
+    logger.info(type(df_dict))
+    logger.info("complete convert to dict")
+    temp_path = os.path.join(TEMP_DIR, "temp.json")
+
+    try:
+        with open(temp_path, "w") as f:
+            json.dump(df_dict, f)
+        logger.info("Complete: DataFrame to bson file ")
+        return temp_path
+    except Exception as e:
+        logger.warning("Fail: DataFrame to bson file")
+        logger.error(e)
+        return None
+
+
 def json2mongo(path, db, user, pw, host, port, collection):
     mongoimport_command = [
         "mongoimport",
@@ -44,29 +62,7 @@ def json2mongo(path, db, user, pw, host, port, collection):
         return 1
 
 
-def store2json(df: pd.DataFrame):
-    # logger.info("convert data type")
-    # df = df.astype("string[pyarrow]")
-    # logger.info("complete convert data type")
-    logger.info("convert to dict")
-    df_dict = df.to_dict(orient="records")
-    logger.info(type(df_dict))
-    logger.info("complete convert to dict")
-    temp_path = os.path.join(TEMP_DIR, "temp.json")
-
-    try:
-        with open(temp_path, "w") as f:
-            json.dump(df_dict, f)
-        logger.info("Complete: DataFrame to bson file ")
-        return temp_path
-    except Exception as e:
-        logger.warning("Fail: DataFrame to bson file")
-        logger.error(e)
-        return None
-
-
 def store2csv(df: pd.DataFrame, schema: dict = None):
-
     temp_path = os.path.join(TEMP_DIR, "temp.csv")
     if schema is None:
         cols = df.columns
