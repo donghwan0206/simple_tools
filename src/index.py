@@ -3,7 +3,6 @@ import os
 import logging
 from logging.handlers import TimedRotatingFileHandler
 from app.es_api import check_es_url
-from datetime import datetime
 
 
 BASE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.path.pardir)
@@ -21,6 +20,7 @@ st.session_state["streamlit_path"] = streamlit_path
 temp_path = os.path.join(BASE_DIR, "temp")
 st.session_state["temp_path"] = temp_path
 
+# Log 디렉토리 없는 경우 생성
 if not os.path.exists(LOG_DIR):
     os.makedirs(LOG_DIR)
 
@@ -71,7 +71,7 @@ else:
         es_url = f.read().strip()
         logger.info(f"ES URL conf file exists: {es_url}")
 # ES_URL 변수에 값 저장
-if es_url:  # "ES_URL.txt" 파일 생성 및 URL 값 저장
+if es_url and check_es_url(es_url):  # "ES_URL.txt" 파일 생성 및 URL 값 저장
     ui_setup_url.empty()  # setup_url ui 가리기
 
     with open(es_url_file_path, "w") as f:
@@ -98,3 +98,7 @@ if es_url:  # "ES_URL.txt" 파일 생성 및 URL 값 저장
             label="MongoDB Importer",
             icon="🗄️",
         )
+else:
+    if os.path.exists(es_url_file_path):
+        os.remove(es_url_file_path)
+    st.rerun()

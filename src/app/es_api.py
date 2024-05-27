@@ -1,4 +1,5 @@
 import requests
+from requests.exceptions import ConnectTimeout, Timeout
 import asyncio
 from .auto_indexing.src import indexing_service
 from pandas import DataFrame
@@ -8,9 +9,12 @@ def check_es_url(url: str):
     if url == "":
         return False
 
-    resp = requests.get(url)
+    try:
+        resp = requests.get(url, timeout=5)
+    except ConnectTimeout as e:
+        return False
 
-    if resp.status_code == 200 and resp.json()["version"]["number"].startwiths("7"):
+    if resp.status_code == 200 and resp.json()["version"]["number"].startswith("7"):
         return True
     else:
         return False
