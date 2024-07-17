@@ -188,7 +188,7 @@ def create_index(collection, indexes):
 
 # pymongo client 연결
 @st.cache_resource
-def init_connection():
+def init_connection(mongodb_host, mongodb_port, mongodb_username, mongodb_password):
     return pm.MongoClient(
         host=mongodb_host,
         port=mongodb_port,
@@ -208,7 +208,9 @@ def get_data_from_rdb(conn, query, show=False) -> pd.DataFrame:
 # mongodb 데이터베이스 선택
 
 if st.button("mongo connect"):
-    mongo_client = init_connection()
+    mongo_client = init_connection(
+        mongodb_host, mongodb_port, mongodb_username, mongodb_password
+    )
 
     st.divider()
     db_list = [
