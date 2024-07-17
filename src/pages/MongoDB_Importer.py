@@ -212,14 +212,14 @@ if st.button("mongo connect"):
         mongodb_host, mongodb_port, mongodb_username, mongodb_password
     )
 
-    st.divider()
-    db_list = [
-        item
-        for item in mongo_client.list_database_names()
-        if item not in ["admin", "config", "local"]
-    ]
-    mongo_db_name = st.selectbox("Database", db_list)
-    st.divider()
+st.divider()
+db_list = [
+    item
+    for item in mongo_client.list_database_names()
+    if item not in ["admin", "config", "local"]
+]
+mongo_db_name = st.selectbox("Database", db_list)
+st.divider()
 
 
 # csv 파일로 입력받는 컬렉션 용
