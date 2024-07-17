@@ -7,7 +7,6 @@ import time
 from datetime import timedelta, datetime
 import logging
 import json
-from notifypy import Notify
 from app.db_api import csv2mongo, store2csv, store2json, json2mongo
 
 logger = logging.getLogger(__name__)
@@ -198,9 +197,6 @@ def init_connection():
     )
 
 
-mongo_client = init_connection()
-
-
 @return_processing_time
 def get_data_from_rdb(conn, query, show=False) -> pd.DataFrame:
     df = conn.query(query, ttl=60 * 30)
@@ -210,6 +206,10 @@ def get_data_from_rdb(conn, query, show=False) -> pd.DataFrame:
 
 
 # mongodb 데이터베이스 선택
+
+if st.button("mongo connect"):
+    mongo_client = init_connection()
+
 st.divider()
 db_list = [
     item
@@ -381,7 +381,7 @@ if st.button("Migrate to MongoDB", type="primary"):
             processing_time, data = get_data_from_rdb(conn, row["query"])
             st.write(f"Finish: Fetching from RDB... ({processing_time}).")
             processing_time_list.append(processing_time)
-            st.write(f"Start: Storing to temp file...")
+            st.write("Start: Storing to temp file...")
             processing_time, path = store2csv_w_time(data, row["schema"])
             st.write(f"Finish: Storing to temp file(path)... ({processing_time}).")
             processing_time_list.append(processing_time)
@@ -410,7 +410,3 @@ if st.button("Migrate to MongoDB", type="primary"):
             label=f"Migrating for csv complete  total time: {sum(processing_time_list, timedelta())}",
             state="complete",
         )
-        notification = Notify()
-        notification.title = "Migrate task is complete!"
-        notification.message = f"{selected_df['collection'].tolist()}"
-        notification.send()
