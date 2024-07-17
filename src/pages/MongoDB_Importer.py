@@ -208,14 +208,14 @@ def get_data_from_rdb(conn, query, show=False) -> pd.DataFrame:
 # mongodb 데이터베이스 선택
 
 if st.button("mongo connect"):
-    mongo_client = init_connection(
+    st.session_state.mongo_client = init_connection(
         mongodb_host, mongodb_port, mongodb_username, mongodb_password
     )
 
 st.divider()
 db_list = [
     item
-    for item in mongo_client.list_database_names()
+    for item in st.session_state.mongo_client.list_database_names()
     if item not in ["admin", "config", "local"]
 ]
 mongo_db_name = st.selectbox("Database", db_list)
@@ -365,9 +365,9 @@ if st.button("Migrate to MongoDB", type="primary"):
             st.write(f"Finish: Importing into mongodb... ({processing_time}).")
 
             st.write("Start: Create index")
-            target_collection = mongo_client.get_database(mongo_db_name).get_collection(
-                mongo_collection_name
-            )
+            target_collection = st.session_state.mongo_client.get_database(
+                mongo_db_name
+            ).get_collection(mongo_collection_name)
             processing_time, _ = create_index(target_collection, row["index"])
             processing_time_list.append(processing_time)
             st.write("Finish: Create index")
@@ -401,9 +401,9 @@ if st.button("Migrate to MongoDB", type="primary"):
             st.write(f"Finish: Importing into mongodb... ({processing_time}).")
             processing_time_list.append(processing_time)
             st.write("Start: Create index")
-            target_collection = mongo_client.get_database(mongo_db_name).get_collection(
-                mongo_collection_name
-            )
+            target_collection = st.session_state.mongo_client.get_database(
+                mongo_db_name
+            ).get_collection(mongo_collection_name)
             processing_time, _ = create_index(target_collection, row["index"])
             processing_time_list.append(processing_time)
             st.write("Finish: Create index")
