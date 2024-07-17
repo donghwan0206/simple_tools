@@ -210,14 +210,14 @@ def get_data_from_rdb(conn, query, show=False) -> pd.DataFrame:
 if st.button("mongo connect"):
     mongo_client = init_connection()
 
-st.divider()
-db_list = [
-    item
-    for item in mongo_client.list_database_names()
-    if item not in ["admin", "config", "local"]
-]
-mongo_db_name = st.selectbox("Database", db_list)
-st.divider()
+    st.divider()
+    db_list = [
+        item
+        for item in mongo_client.list_database_names()
+        if item not in ["admin", "config", "local"]
+    ]
+    mongo_db_name = st.selectbox("Database", db_list)
+    st.divider()
 
 
 # csv 파일로 입력받는 컬렉션 용
