@@ -258,8 +258,9 @@ with ui_tab_multi:
                     # 성공적으로 alias를 받았을 경우(alias가 0 건인 경우도 포함)
                     if result:
                         if st.session_state.dev_only:
-                            for e in resp:
-                                resp.remove(e)
+                            for e in resp.copy():
+                                if "dev" not in e:
+                                    resp.remove(e)
 
                         st.text("alias")
                         st.table(resp)
