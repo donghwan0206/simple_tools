@@ -6,6 +6,7 @@ from app.es_api import (
     change_aliases_old_to_new,
     get_all_indices,
     get_all_aliases,
+    get_indices_wo_alias,
     get_indices_via_phrase,
 )
 
@@ -15,12 +16,17 @@ logger = logging.getLogger(__name__)
 if "ES_URL" not in st.session_state:
     st.switch_page("index.py")
 
+st.set_page_config(
+    layout="wide",
+    page_title="Alias Switcher",
+)
+
 # ES URL 설정
 ES_URL = st.session_state["ES_URL"]
 
 selected_aliases = []
 
-ui_tab_alias, ui_tab_index = st.tabs(["via Alias", "via Index"])
+ui_tab_alias, ui_tab_index, ui_tab_multi = st.tabs(["via Alias", "via Index", "multi"])
 
 # alias 기반 UI
 with ui_tab_alias:
@@ -160,3 +166,102 @@ with ui_tab_index:
                 st.json(resp.text)
             else:
                 st.error("old index를 선택하여 변경할 alias를 정해주세요.")
+
+
+def reload_index_list():
+    if "data_df" in st.session_state:
+        st.session_state.pop("data_df")
+    status, indices = get_indices_wo_alias(ES_URL)
+    if status:
+        st.session_state.data_df = pd.DataFrame(
+            [(a, False) for a in indices], columns=["index", "select"]
+        )
+    else:
+        st.error("Fail")
+
+
+with ui_tab_multi:
+    # TODO
+    # 1. alias 지정안된 인덱스 리스트 보여주기
+    # 2. 해당 리스트와 인덱스명이 유사하며 alias
+    ui_col_left, ui_col_right = st.columns(2)
+    index_list = []
+
+    if "data_df" not in st.session_state:
+        reload_index_list()
+
+    with ui_col_left:
+        st.subheader("List of index(with no alias)")
+        if st.button("Reload list of index", type="primary"):
+            reload_index_list()
+
+    ui_col_left_search, ui_col_right_btn1, ui_col_right_btn2 = st.columns([4, 1, 1])
+
+    with ui_col_left_search:
+        search_words = st.text_input(label="search", placeholder="e.g. locale")
+        search_words = search_words.strip().split(" ")
+        search_df = st.session_state.data_df
+
+        for word in search_words:
+            search_df = search_df[search_df["index"].str.contains(word, na=False)]
+        st.code(search_words)
+
+    with ui_col_right_btn2:
+        # 버튼을 누른 경우 실행
+        if st.button(label="Change All Aliases", type="primary"):
+            # 변경할 alias가 선택된 경우만 실행
+            if len(st.session_state.df_list) > 0:
+                for new_index, prev_index, aliases in st.session_state.df_list:
+                    logger.info(
+                        f"{aliases} change - from: {prev_index} ->  to: {new_index}"
+                    )
+                    result, resp = change_aliases_old_to_new(
+                        prev_index,
+                        new_index,
+                        aliases,
+                        ES_URL,
+                    )
+
+                    st.text(result)
+                    st.json(resp.text)
+            else:
+                st.error("검색을 통해 선택하여 변경할 index를 정해주세요.")
+
+    if search_words != [""]:
+        st.session_state.df_list = []
+        for i, row in search_df.iterrows():
+            st.divider()
+            ui_col_left_2, ui_col_right_1, ui_col_right_2 = st.columns([1, 1, 1])
+            with ui_col_left_2:
+                st.selectbox("index", [row["index"]], disabled=True)
+
+            with ui_col_right_1:
+
+                _, target_index_list = get_indices_via_phrase(
+                    "*" + "_".join(row["index"].split("_")[1:]), ES_URL
+                )
+                target_index_list.remove(row["index"])
+                target_index_list.insert(0, None)
+                change_index_name = st.selectbox(
+                    f"change for {row['index']}",
+                    target_index_list,
+                    placeholder="Select index name...",
+                )
+
+            with ui_col_right_2:
+                if change_index_name is not None:
+                    result, resp = get_aliases_via_index_name(
+                        index_name=change_index_name, es_url=ES_URL
+                    )
+
+                    # 성공적으로 alias를 받았을 경우(alias가 0 건인 경우도 포함)
+                    if result:
+                        st.text("alias")
+                        st.table(resp)
+
+            if change_index_name is not None:
+                st.session_state.df_list.append([row["index"], change_index_name, resp])
+    else:
+        st.session_state.df_list = []
+        st.table(search_df["index"])
+    st.code(st.session_state.df_list)
