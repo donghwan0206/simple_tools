@@ -6,7 +6,7 @@ from app.es_api import (
     change_aliases_old_to_new,
     get_all_indices,
     get_all_aliases,
-    get_indices_wo_alias,
+    get_indices_wo_alias_except_dev,
     get_indices_via_phrase,
 )
 
@@ -171,7 +171,7 @@ with ui_tab_index:
 def reload_index_list():
     if "data_df" in st.session_state:
         st.session_state.pop("data_df")
-    status, indices = get_indices_wo_alias(ES_URL)
+    status, indices = get_indices_wo_alias_except_dev(ES_URL)
     if status:
         st.session_state.data_df = pd.DataFrame(
             [(a, False) for a in indices], columns=["index", "select"]
@@ -204,9 +204,10 @@ with ui_tab_multi:
 
         for word in search_words:
             search_df = search_df[search_df["index"].str.contains(word, na=False)]
-        st.code(search_words)
+        # st.code(search_words)
 
     with ui_col_right_btn2:
+        st.session_state.dev_only = st.checkbox("dev only")
         # 버튼을 누른 경우 실행
         if st.button(label="Change All Aliases", type="primary"):
             # 변경할 alias가 선택된 경우만 실행
@@ -256,6 +257,10 @@ with ui_tab_multi:
 
                     # 성공적으로 alias를 받았을 경우(alias가 0 건인 경우도 포함)
                     if result:
+                        if st.session_state.dev_only:
+                            for e in resp:
+                                resp.remove(e)
+
                         st.text("alias")
                         st.table(resp)
 
@@ -264,4 +269,4 @@ with ui_tab_multi:
     else:
         st.session_state.df_list = []
         st.table(search_df["index"])
-    st.code(st.session_state.df_list)
+    # st.code(st.session_state.df_list)

@@ -40,6 +40,28 @@ def get_indices_wo_alias(
         return False, resp
 
 
+def get_indices_wo_alias_except_dev(
+    es_url: str,
+) -> tuple[bool, list] | tuple[bool, requests.Response]:
+    end_point = f"{es_url}/_alias"
+
+    resp = requests.get(end_point)
+
+    if resp.status_code == 200:
+        index_list = []
+        for k, v in resp.json().items():
+            if len(v["aliases"]) == 1 and "hsdev" in v["aliaes"][0]:
+                index_list.append(k)
+            elif len(v["aliases"]) > 0:
+                continue
+            elif not k.startswith("."):
+                index_list.append(k)
+            index_list.sort()
+        return True, index_list
+    else:
+        return False, resp
+
+
 def delete_indices(indices: list, es_url: str):
     fail_list = []
 
