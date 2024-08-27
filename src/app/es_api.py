@@ -50,7 +50,7 @@ def get_indices_wo_alias_except_dev(
     if resp.status_code == 200:
         index_list = []
         for k, v in resp.json().items():
-            if len(v["aliases"]) == 1 and "hsdev" in v["aliaes"][0]:
+            if len(v["aliases"]) == 1 and "hsdev" in v["aliases"][0]:
                 index_list.append(k)
             elif len(v["aliases"]) > 0:
                 continue
