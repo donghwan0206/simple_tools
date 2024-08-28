@@ -333,7 +333,9 @@ if st.button("RDB Connection Check"):
                 df.iloc[i]["conn_check"] = True
                 st.toast(f"✅ {collection}: DB connection is OK! ")
             else:
-                st.warning(f"{collection}: DB connection is failed.")
+                st.warning(
+                    f"{collection}: DB connection is failed.\n mariadb://{row['rdb_username']}:{row['rdb_password']}@{row['rdb_host']}:{row['rdb_port']}/{row['rdb_db']}\n {conn}"
+                )
 
 
 if st.button("Migrate to MongoDB", type="primary"):
