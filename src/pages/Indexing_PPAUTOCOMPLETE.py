@@ -5,6 +5,7 @@ import pandas as pd
 from app.es_api import indexing_ppautocomplete
 import logging
 from streamlit_ace import st_ace
+import slack_sdk
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +20,46 @@ if "resources_path" not in st.session_state:
     st.switch_page("index.py")
 
 config_path = os.path.join(st.session_state.resources_path, "conf.json")
+secrets_path = os.path.join(st.session_state.streamlit_path, "secrets.toml")
+
+
+# 파일 업로드 모달
+@st.experimental_dialog("config file is not exist.")
+def file_not_exist_dialog(path, _type: list[str]):
+    st.code(f"{path}")
+    st.write("is not exist")
+
+    uploaded_file = st.file_uploader(
+        label="Upload config file",
+        type=_type,
+        accept_multiple_files=False,
+    )
+    if uploaded_file is not None:
+        logger.info(f"{path} file is uploaded")
+        try:
+            with open(path, "wb") as f:
+                f.write(uploaded_file.getvalue())
+        except Exception as e:
+            # st.switch_page("pages/MongoDB_Importer.py")
+            st.error(e)
+
+    if st.button("confirm"):
+        st.switch_page("pages/Indexing_PPAUTOCOMPLETE.py")
+
+
+# config 파일이 없는 경우 경고 모달로 파일 업로드
+if not os.path.exists(secrets_path):
+    logger.warning("secrets.toml file isn't exist")
+    file_not_exist_dialog(secrets_path, ["toml"])
+    st.stop()
+
+slack_bot_token = st.secrets.slack.bot_token
+slack_user_id_1 = st.secrets.slack.user_id_1
+slack_user_id_2 = st.secrets.slack.user_id_2
+slack_channel = st.secrets.slack.channel
+
+if "slack_client" not in st.session_state:
+    st.session_state.slack_client = slack_sdk.WebClient(token=slack_bot_token)
 
 
 @st.experimental_dialog("config file is not exist.")
@@ -91,6 +132,13 @@ else:
 
                 progress_cnt = 100 % len(select_df)
                 progress_bar = st.progress(progress_cnt, text="indexing")
+
+                slack_msg = f"""<@{slack_user_id_1}>, <@{slack_user_id_2}> 
+PPAUTOCOMPLETE indexing is comleted now
+version: {version}
+target index:
+{select_df['index'].tolist()}
+    """
                 for _, row in select_df.iterrows():
                     # processing UI 빙글빙글
                     with st.spinner(f"indexing... {row['index']}"):
@@ -109,7 +157,9 @@ else:
                         f"v{version}_{row['index']}_{locale} : complete indexing"
                     )
                 progress_bar.progress(100, text="indexing complete")
-
+                response = st.session_state.slack_client.chat_postMessage(
+                    channel=slack_channel, text=slack_msg
+                )
                 st.write(select_df)
             else:
                 st.warning("선택된 인덱스가 없거나, 버전이 입력되지 않았습니다.")
