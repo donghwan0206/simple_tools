@@ -5,7 +5,7 @@ import pandas as pd
 from app.es_api import indexing_ppautocomplete
 import logging
 from streamlit_ace import st_ace
-import slack_sdk
+from app.slack_api import send_msg_to_channel
 
 logger = logging.getLogger(__name__)
 
@@ -57,9 +57,6 @@ slack_bot_token = st.secrets.slack.bot_token
 slack_user_id_1 = st.secrets.slack.user_id_1
 slack_user_id_2 = st.secrets.slack.user_id_2
 slack_channel = st.secrets.slack.channel
-
-if "slack_client" not in st.session_state:
-    st.session_state.slack_client = slack_sdk.WebClient(token=slack_bot_token)
 
 
 @st.experimental_dialog("config file is not exist.")
@@ -133,12 +130,6 @@ else:
                 progress_cnt = 100 % len(select_df)
                 progress_bar = st.progress(progress_cnt, text="indexing")
 
-                slack_msg = f"""<@{slack_user_id_1}>, <@{slack_user_id_2}> 
-PPAUTOCOMPLETE indexing is comleted now
-version: {version}
-target index:
-{select_df['index'].tolist()}
-    """
                 for _, row in select_df.iterrows():
                     # processing UI 빙글빙글
                     with st.spinner(f"indexing... {row['index']}"):
@@ -157,8 +148,15 @@ target index:
                         f"v{version}_{row['index']}_{locale} : complete indexing"
                     )
                 progress_bar.progress(100, text="indexing complete")
-                response = st.session_state.slack_client.chat_postMessage(
-                    channel=slack_channel, text=slack_msg
+
+                slack_msg = f"""<@{slack_user_id_1}>, <@{slack_user_id_2}> 
+                    PPAUTOCOMPLETE indexing is comleted now
+                    version: {version}
+                    target index:
+                    {select_df['index'].tolist()}
+                """
+                response = send_msg_to_channel(
+                    msg=slack_msg, channel=slack_channel, bot_token=slack_bot_token
                 )
                 st.write(select_df)
             else:
